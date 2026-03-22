@@ -1,0 +1,22 @@
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfplan
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ruff_cache/
+
+# dbt
+**/target/
+**/logs/dbt.log
+**/.user.yml
+
+# IDE / OS
+.DS_Store
+.idea/

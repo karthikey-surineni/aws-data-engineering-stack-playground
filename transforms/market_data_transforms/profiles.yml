@@ -1,0 +1,13 @@
+market_data_transforms:
+  outputs:
+    dev:
+      type: athena
+      s3_staging_dir: s3://market-data-bronze-ksurineni-apse2-athena-results/
+      s3_data_dir: s3://market-data-bronze-ksurineni-apse2-athena-results/
+      s3_data_naming: schema_table_unique
+      region_name: ap-southeast-2
+      schema: market_data_db
+      database: awsdatacatalog
+      work_group: market_data_dbt_workgroup
+      threads: 4
+  target: dev
