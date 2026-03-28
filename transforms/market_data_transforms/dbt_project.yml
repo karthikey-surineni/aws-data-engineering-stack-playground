@@ -31,3 +31,13 @@ clean-targets:         # directories to be removed by `dbt clean`
 # files using the `{{ config(...) }}` macro.
 models:
   market_data_transforms:
+    staging:
+      +materialized: table
+      +table_type: iceberg
+      +format: parquet
+    marts:
+      +materialized: incremental
+      +table_type: iceberg
+      +format: parquet
+  dbt_project_evaluator:
+    +enabled: "{{ target.name == 'ci' }}"

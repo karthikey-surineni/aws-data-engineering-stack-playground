@@ -1,0 +1,45 @@
+version: 2
+
+sources:
+  - name: raw
+    database: awsdatacatalog
+    schema: market_data_db
+    description: "Raw cryptocurrency trade data ingested from Binance via Kinesis Firehose into S3 Bronze layer."
+    freshness:
+      warn_after: {count: 30, period: minute}
+      error_after: {count: 1, period: hour}
+    loaded_at_field: "from_unixtime(e_time / 1000)"
+    tables:
+      - name: raw_trades
+        description: "Live raw cryptocurrency trades ingested from Binance WebSocket via Kinesis. Each row is a single trade event."
+        columns:
+          - name: e
+            description: "Event type (e.g., 'trade')"
+          - name: e_time
+            description: "Event timestamp in Unix milliseconds"
+          - name: s
+            description: "Trading symbol (e.g., 'BTCUSDT')"
+          - name: t
+            description: "Trade ID — unique identifier for each trade on Binance"
+          - name: p
+            description: "Trade price as string (e.g., '67234.50')"
+          - name: q
+            description: "Trade quantity as string (e.g., '0.00100')"
+          - name: b
+            description: "Buyer order ID"
+          - name: a
+            description: "Seller order ID"
+          - name: t_time
+            description: "Trade timestamp in Unix milliseconds"
+          - name: m
+            description: "Is the buyer the market maker (true/false)"
+          - name: m_ignore
+            description: "Legacy field — always ignore"
+          - name: year
+            description: "Partition column — year (varchar)"
+          - name: month
+            description: "Partition column — month zero-padded (varchar)"
+          - name: day
+            description: "Partition column — day zero-padded (varchar)"
+          - name: hour
+            description: "Partition column — hour zero-padded (varchar)"

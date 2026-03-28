@@ -4,6 +4,8 @@
 *.tfstate.*
 crash.log
 *.tfplan
+terraform/*_plan.txt
+terraform/plan_output.txt
 
 # Python
 __pycache__/
@@ -20,3 +22,6 @@ venv/
 # IDE / OS
 .DS_Store
 .idea/
+
+# Job / debug dumps
+metadata-*.log

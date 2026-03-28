@@ -1,3 +1,8 @@
+# SNS Topic for pipeline alerts
+resource "aws_sns_topic" "pipeline_alerts" {
+  name = "${var.project_prefix}-pipeline-alerts"
+}
+
 # CloudWatch Alarm for Kinesis Iterator Age (Consumer Lag)
 resource "aws_cloudwatch_metric_alarm" "kinesis_iterator_age" {
   alarm_name          = "${var.project_prefix}-kinesis-iterator-age-alarm"
@@ -14,7 +19,10 @@ resource "aws_cloudwatch_metric_alarm" "kinesis_iterator_age" {
   }
 
   alarm_description = "This metric monitors the iterator age for Kinesis consumers. Triggers if consumer is lagging by more than 1 minute."
-  actions_enabled   = false # Enable this when SNS topic is available
+  actions_enabled   = true
+
+  alarm_actions = [aws_sns_topic.pipeline_alerts.arn]
+  ok_actions    = [aws_sns_topic.pipeline_alerts.arn]
 }
 
 # CloudWatch Alarm for Firehose S3 Delivery Success
@@ -33,5 +41,52 @@ resource "aws_cloudwatch_metric_alarm" "firehose_delivery_success" {
   }
 
   alarm_description = "Monitors Firehose delivery success rate to S3. Alerts if not 100% successful over 5 minutes."
-  actions_enabled   = false
+  actions_enabled   = true
+
+  alarm_actions = [aws_sns_topic.pipeline_alerts.arn]
+  ok_actions    = [aws_sns_topic.pipeline_alerts.arn]
+}
+
+# CloudWatch Alarm for Glue Streaming Job failures
+resource "aws_cloudwatch_metric_alarm" "glue_job_failure" {
+  alarm_name          = "${var.project_prefix}-glue-job-failure-alarm"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "glue.driver.aggregate.numFailedTasks"
+  namespace           = "Glue"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 0
+
+  dimensions = {
+    JobName = aws_glue_job.market_data_streaming.name
+    JobRunId = "ALL"
+    Type     = "gauge"
+  }
+
+  alarm_description = "Alerts when the Glue streaming job has failed tasks."
+  actions_enabled   = true
+
+  alarm_actions = [aws_sns_topic.pipeline_alerts.arn]
+}
+
+# CloudWatch Alarm for ECS dbt task failures
+resource "aws_cloudwatch_metric_alarm" "ecs_task_failure" {
+  alarm_name          = "${var.project_prefix}-ecs-dbt-task-failure-alarm"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "ExecutionsFailed"
+  namespace           = "AWS/States"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 0
+
+  dimensions = {
+    StateMachineArn = aws_sfn_state_machine.dbt_orchestrator.arn
+  }
+
+  alarm_description = "Alerts when the dbt Step Functions execution fails."
+  actions_enabled   = true
+
+  alarm_actions = [aws_sns_topic.pipeline_alerts.arn]
 }

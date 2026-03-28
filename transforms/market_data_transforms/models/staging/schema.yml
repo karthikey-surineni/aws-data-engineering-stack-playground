@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: stg_market_data
+    description: >
+      Staging model that cleans and renames raw Binance trade data.
+      Casts string prices/quantities to doubles, converts Unix timestamps,
+      and filters to the current day's partition.
+    columns:
+      - name: symbol
+        description: "Trading pair symbol (e.g., 'BTCUSDT')"
+        tests:
+          - not_null
+      - name: price_usd
+        description: "Trade price in USD (cast from string)"
+        tests:
+          - not_null
+      - name: quantity
+        description: "Trade quantity (cast from string)"
+        tests:
+          - not_null
+      - name: trade_id
+        description: "Unique Binance trade ID"
+        tests:
+          - not_null
+          - unique
+      - name: event_timestamp
+        description: "Event timestamp converted from Unix milliseconds"
+        tests:
+          - not_null
+      - name: is_buyer_maker
+        description: "Whether the buyer is the market maker"
+      - name: year
+        description: "Partition column — year"
+      - name: month
+        description: "Partition column — month"
+      - name: day
+        description: "Partition column — day"
+      - name: hour
+        description: "Partition column — hour"

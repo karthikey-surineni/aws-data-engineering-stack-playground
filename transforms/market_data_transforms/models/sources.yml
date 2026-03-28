@@ -1,9 +1,0 @@
-version: 2
-
-sources:
-  - name: raw
-    database: awsdatacatalog
-    schema: market_data_db
-    tables:
-      - name: raw_trades
-        description: "Live raw cryptocurrency trades ingested from Binance WebSocket via Kinesis."

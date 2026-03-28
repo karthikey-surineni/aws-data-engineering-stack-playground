@@ -1,0 +1,81 @@
+version: 2
+
+models:
+  - name: fct_trades
+    description: >
+      Fact table of individual cryptocurrency trades with derived fields.
+      Incrementally appended using Iceberg, partitioned by day for efficient querying.
+    columns:
+      - name: trade_id
+        description: "Unique Binance trade ID"
+        tests:
+          - not_null
+          - unique
+      - name: symbol
+        description: "Trading pair symbol (e.g., 'BTCUSDT')"
+        tests:
+          - not_null
+      - name: price_usd
+        description: "Trade price in USD"
+        tests:
+          - not_null
+      - name: quantity
+        description: "Trade quantity"
+        tests:
+          - not_null
+      - name: trade_value_usd
+        description: "Computed: price_usd * quantity"
+      - name: event_timestamp
+        description: "Event timestamp from Binance"
+        tests:
+          - not_null
+      - name: is_buyer_maker
+        description: "Whether the buyer is the market maker"
+      - name: trade_side
+        description: "Derived trade direction: BUY or SELL"
+        tests:
+          - accepted_values:
+              values: ['BUY', 'SELL']
+
+  - name: fct_trade_summary_hourly
+    description: >
+      Hourly aggregated trade summary per symbol. Includes OHLC prices, volume,
+      trade counts, and buy/sell ratios. Incrementally appended, partitioned by month.
+    columns:
+      - name: summary_id
+        description: "Surrogate key from symbol + trade_hour"
+        tests:
+          - not_null
+          - unique
+      - name: symbol
+        description: "Trading pair symbol"
+        tests:
+          - not_null
+      - name: trade_hour
+        description: "Truncated hour of the aggregation window"
+        tests:
+          - not_null
+      - name: trade_count
+        description: "Number of trades in the hour"
+      - name: total_quantity
+        description: "Sum of trade quantities"
+      - name: total_volume_usd
+        description: "Sum of trade values in USD"
+      - name: avg_price_usd
+        description: "Average trade price"
+      - name: low_price_usd
+        description: "Lowest trade price in the hour"
+      - name: high_price_usd
+        description: "Highest trade price in the hour"
+      - name: open_price_usd
+        description: "First trade price in the hour (approximated as min)"
+      - name: close_price_usd
+        description: "Last trade price in the hour (approximated as max)"
+      - name: price_range_usd
+        description: "High minus low price"
+      - name: buy_quantity
+        description: "Sum of buy-side quantity"
+      - name: sell_quantity
+        description: "Sum of sell-side quantity"
+      - name: buy_ratio
+        description: "Proportion of buy volume to total volume"
